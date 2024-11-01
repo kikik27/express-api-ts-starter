@@ -6,7 +6,7 @@ import cors from 'cors';
 import MessageResponse from './interfaces/response.interface';
 import { notFound, errorHandler } from './middlewares';
 import auth from './api/v1/auth/auth.controller';
-
+import users from './api/v1/users/user.controller';
 require('dotenv').config();
 
 const app = express();
@@ -23,7 +23,7 @@ app.get<{}, MessageResponse>('/', (req, res) => {
 });
 
 app.use('/api/v1/auth', auth);
-
+app.use('/api/v1/users', users);
 app.use(notFound);
 app.use(errorHandler);
 
