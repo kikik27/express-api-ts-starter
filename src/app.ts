@@ -3,8 +3,9 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import * as middlewares from './middlewares';
 import MessageResponse from './interfaces/response.interface';
+import { notFound, errorHandler } from './middlewares';
+import auth from './api/v1/auth/auth.controller';
 
 require('dotenv').config();
 
@@ -21,7 +22,9 @@ app.get<{}, MessageResponse>('/', (req, res) => {
   });
 });
 
-app.use(middlewares.notFound);
-app.use(middlewares.errorHandler);
+app.use('/api/v1/auth', auth);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
