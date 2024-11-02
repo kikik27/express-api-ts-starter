@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { User } from "../db/schema/users";
 
-export const generateAccessToken = (user: User) => {
-  return jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
+export const generateAccessToken = (user_id: string) => {
+  return jwt.sign({ userId: user_id }, process.env.JWT_SECRET!, {
     expiresIn: "1h",
   });
 }
@@ -20,7 +20,7 @@ export const generateRefreshToken = (user: User, jti: string) => {
   );
 }
 
-export const generateTokens = (user: User) => {
-  const accessToken = generateAccessToken(user);
+export const generateTokens = (user_id: string) => {
+  const accessToken = generateAccessToken(user_id);
   return { accessToken };
 }
