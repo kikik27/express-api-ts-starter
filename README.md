@@ -1,129 +1,85 @@
 # Express API Starter with TypeScript
 
-A modern Express.js API starter template with TypeScript, Drizzle ORM, JWT Authentication, and more.
+A modern Express.js API starter template with TypeScript, featuring authentication, email functionality, and database integration.
 
 ## Features
 
 ### Core Dependencies
-* [Express](https://expressjs.com/) - Fast, unopinionated web framework for Node.js
-* [TypeScript](https://www.typescriptlang.org/) - JavaScript with syntax for types
-* [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ORM for SQL databases
-* [PostgreSQL](https://www.postgresql.org/) - Open source relational database
+* Express.js with TypeScript
+* PostgreSQL with Drizzle ORM
+* Email support with Nodemailer
+* Template rendering with Mustache
 
 ### Authentication & Security
-* [JWT](https://jwt.io/) - JSON Web Token for authentication
-* [bcrypt](https://www.npmjs.com/package/bcrypt) - Password hashing
-* [helmet](https://helmetjs.github.io/) - Security middleware
-* [cors](https://www.npmjs.com/package/cors) - Cross-Origin Resource Sharing
+* JWT-based authentication
+* Password reset functionality
+* Email verification
+* Request validation with Zod
+* Security headers with Helmet
+* CORS support
 
-### Utilities
-* [zod](https://zod.dev/) - TypeScript-first schema validation
-* [morgan](https://www.npmjs.com/package/morgan) - HTTP request logger
-* [dotenv](https://www.npmjs.com/package/dotenv) - Environment variables management
+### Development Tools
+* ESLint with TypeScript support
+* Jest for testing
+* Nodemon for development
+* TypeScript type checking
 
-## Setup
+## Quick Start
 
-### 1. Install Dependencies
+1. **Install Dependencies**
 ```bash
 npm install
 ```
 
-### 2. Environment Configuration
-Create a `.env` file in the root directory:
-
+2. **Environment Setup**
+Create a `.env` file:
 ```env
+# Server
+PORT=3000
+NODE_ENV=development
+
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+DATABASE_URL="your-postgresql-connection-string"
 
 # JWT
 JWT_SECRET="your-secret-key"
 JWT_REFRESH_SECRET="your-refresh-secret-key"
 
-# Server
-PORT=3000
+# Email
+MAIL_HOST="your-smtp-host"
+MAIL_PORT=2525
+MAIL_USER="your-mail-user"
+MAIL_PASSWORD="your-mail-password"
+FRONTEND_URL="http://localhost:3000"
 ```
 
-### 3. Database Setup
-
-#### Initialize Drizzle
+3. **Database Setup**
 ```bash
-# Generate migrations
 npx drizzle-kit generate:pg
-
-# Push migrations to database
 npx drizzle-kit push:pg
 ```
 
-## Development
-
+4. **Start Development Server**
 ```bash
-# Run in development mode
 npm run dev
-
-# Run in production mode
-npm run build && npm run start:dist
-
-# Type checking
-npm run typecheck
-
-# Linting
-npm run lint
 ```
 
-## Testing
+## API Endpoints
 
-```bash
-# Run tests
-npm run test
-```
+### Authentication
+* `POST /api/auth/register` - Register new user
+* `POST /api/auth/login` - User login
+* `POST /api/auth/forgot-password` - Request password reset
+* `POST /api/auth/reset-password` - Reset password
+* `GET /api/auth/me` - Get current user
 
-## Project Structure
-
-```
-src/
-├── config/         # Configuration files
-├── controllers/    # Route controllers
-├── db/
-│   ├── migrations/ # Database migrations
-│   └── schema/     # Drizzle schema definitions
-├── helpers/        # Helper functions
-├── middleware/     # Express middleware
-├── routes/         # Route definitions
-└── types/          # TypeScript type definitions
-```
-
-## API Authentication
-
-The API uses JWT for authentication. Here's how it works:
-
-1. **Register**: Create a new user account
-   - Endpoint: `POST /api/auth/register`
-   - Body: `{ email: string, password: string }`
-
-2. **Login**: Authenticate and receive tokens
-   - Endpoint: `POST /api/auth/login`
-   - Body: `{ email: string, password: string }`
-   - Returns: `{ accessToken: string, refreshToken: string }`
-
-3. **Protected Routes**: Include the access token in headers
-   ```
-   Authorization: Bearer <access_token>
-   ```
-
-4. **Token Refresh**: Get a new access token using refresh token
-   - Endpoint: `POST /api/auth/refresh`
-   - Body: `{ refreshToken: string }`
+### Users
+* `GET /api/users` - List users (paginated)
 
 ## Available Scripts
-
-- `npm start` - Start the server using ts-node
-- `npm run dev` - Start the server in development mode with nodemon
-- `npm run build` - Build the project
-- `npm run start:dist` - Start the built project
-- `npm run lint` - Run ESLint
-- `npm run test` - Run tests
-- `npm run typecheck` - Check TypeScript types
-
-## License
-
-MIT
+* `npm run dev` - Start development server
+* `npm run build` - Build for production
+* `npm run start:dist` - Start production server
+* `npm run typecheck` - Check TypeScript types
+* `npm run lint` - Run ESLint
+* `npm test` - Run tests
