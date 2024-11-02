@@ -11,6 +11,15 @@ export const userLoginSchema = z.object({
   password: z.string().min(8),
 });
 
+export const userForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const userResetPasswordSchema = z.object({
+  token: z.string(),
+  password: z.string().min(8),
+});
+
 export interface UserCredentials {
   id: string;
   name: string;

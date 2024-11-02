@@ -65,7 +65,7 @@ export const createResponses = (resourceName: string): ResponseGenerator<any> =>
       errorResponse(message || "Validation error", error),
     
     error: (error, message) => 
-      errorResponse(message || "Internal server error", error),
+      errorResponse(message || "Internal server error", process.env.NODE_ENV === "development" ? error : ""),
   };
 };
 

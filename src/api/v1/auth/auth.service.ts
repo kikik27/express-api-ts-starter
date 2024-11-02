@@ -1,32 +1,86 @@
 import { db } from "../../../db";
 import { users } from "../../../db/schema/users";
 import { User } from "../../../db/schema/users";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import { generateAccessToken, generateTokens } from "../../../utils/jwt";
 import { eq } from "drizzle-orm";
-import { log } from "console";
-import { createUser } from "../users/user.service";
+import { createUser, getUserByEmail, getUserByResetPasswordToken, updateUser } from "../users/user.service";
+import { sendEmailResetPassword } from "../../../mailer/mailer.service";
 
 export const register = async (user: User) => {
   const newUser = await createUser(user);
-  return generateTokens(user);
-} 
+  return generateTokens(newUser.id);
+};
 
 export const login = async (payload: User) => {
   try {
-    const { password, ...rest } = payload;
-    const user = await db.select().from(users).where(eq(users.email, rest.email)).limit(1);
-    console.log(user);
+    const { password, email } = payload;
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1)
+      .then(results => results[0]);
+
     if (!user) {
-    throw new Error("User not found");
-  }
-  const isPasswordValid = await bcrypt.compare(password, user[0].password);
-  if (!isPasswordValid) {
-    throw new Error("Invalid password");
-  }
-    const { accessToken } = await generateTokens(user[0]);
+      throw new Error("User not found");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Invalid password");
+    }
+
+    const { accessToken } = await generateTokens(user.id);
     return { accessToken };
   } catch (error) {
     throw error;
   }
-}
+};
+
+export const forgotPassword = async (payload: User) => {
+  try {
+    return await getUserByEmail(payload.email);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendResetPassword = async (payload: User) => {
+  try {
+    const user = await getUserByEmail(payload.email);
+    const resetToken = Buffer.from(`${user.email}${Date.now()}`).toString('base64');
+    
+    const updatedUser = {
+      ...user,
+      reset_password_token: resetToken
+    };
+    
+    await updateUser(user.id, updatedUser);
+
+    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    await sendEmailResetPassword(updatedUser, { url: resetPasswordUrl });
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const resetPassword = async (token: string, password: string) => {
+  try {
+    const user = await getUserByResetPasswordToken(token);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updatedUser = {
+      ...user,
+      password: hashedPassword,
+      reset_password_token: null
+    };
+
+    await updateUser(user.id, updatedUser);
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
