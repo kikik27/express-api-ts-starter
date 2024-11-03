@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 256 }).notNull(),
   role: rolesEnum().default('user'),
   reset_password_token: varchar("reset_password_token", { length: 256 }),
+  verification_token: varchar("verification_token", { length: 256 }),
   verified_at: timestamp(),
   ...globalSchema
 });

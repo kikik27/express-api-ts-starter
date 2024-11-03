@@ -3,7 +3,8 @@ import { db } from "../../../db";
 import { User } from "../../../db/schema/users";
 import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
-import { errorResponse, paginate } from "../../../helpers/response";
+import { paginate } from "../../../helpers/response";
+import { safeUser } from "./user.schema";
 
 export const createUser = async (user: User) => {
   try {
@@ -12,14 +13,14 @@ export const createUser = async (user: User) => {
     const [newUser] = await db
       .insert(users)
       .values({ ...rest, password: hashedPassword })
-      .returning({
+      .returning({                                  
         id: users.id,
         name: users.name,
         email: users.email,
         role: users.role,
-        created_at: users.created_at,
+        verified_at: users.verified_at,
       });
-    return newUser;
+    return newUser as safeUser;
   } catch (error) {
     throw error;
   }
@@ -105,3 +106,22 @@ export const getUserByResetPasswordToken = async (token: string) => {
     throw error;
   }
 };
+
+export const getUserByVerificationToken = async (token: string) => {
+  try {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.verification_token, token))
+      .limit(1);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+

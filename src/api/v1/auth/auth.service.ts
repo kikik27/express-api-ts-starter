@@ -4,11 +4,25 @@ import { User } from "../../../db/schema/users";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateTokens } from "../../../utils/jwt";
 import { eq } from "drizzle-orm";
-import { createUser, getUserByEmail, getUserByResetPasswordToken, updateUser } from "../users/user.service";
-import { sendEmailResetPassword } from "../../../mailer/mailer.service";
+import { createUser, getUserByEmail, getUserByResetPasswordToken, getUserByVerificationToken, updateUser } from "../users/user.service";
+import { sendEmailResetPassword, sendEmailVerifyEmail } from "../../../mailer/mailer.service";
 
 export const register = async (user: User) => {
-  const newUser = await createUser(user);
+  const verificationToken = Buffer.from(`${user.email}${Date.now()}`).toString('base64');
+
+  const userWithToken = {
+    ...user,
+    verification_token: verificationToken,
+    verified_at: null
+  };
+
+  // Create new user with verification token
+  const newUser = await createUser(userWithToken);
+
+  // Send verification email
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+  await sendEmailVerifyEmail(newUser, { url: verificationUrl });
+
   return generateTokens(newUser.id);
 };
 
@@ -78,6 +92,21 @@ export const resetPassword = async (token: string, password: string) => {
       reset_password_token: null
     };
 
+    await updateUser(user.id, updatedUser);
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyEmail = async (token: string) => {
+  try {
+    const user = await getUserByVerificationToken(token);
+    const updatedUser = {
+      ...user,
+      verified_at: new Date(),
+      verification_token: null
+    };
     await updateUser(user.id, updatedUser);
     return true;
   } catch (error) {

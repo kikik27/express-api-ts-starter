@@ -1,5 +1,5 @@
 import express from "express";
-import { login, register, resetPassword, sendResetPassword } from "./auth.service";
+import { login, register, resetPassword, sendResetPassword, verifyEmail } from "./auth.service";
 import { userForgotPasswordSchema, userLoginSchema, userRegistrationSchema, userResetPasswordSchema } from "./auth.schema";
 import { isAuthenticate, validateRequest } from "../../../middlewares";
 import { createResponses } from "../../../helpers/response";
@@ -41,6 +41,15 @@ router.post('/reset-password', validateRequest(userResetPasswordSchema), async (
     res.status(500).json(response.error(error));
   }
 }); 
+
+router.post('/verify-email', async (req, res) => {
+  try {
+    const user = await verifyEmail(req.query.token as string);
+    res.status(200).json(response.fetched(user, "Email verified successfully"));
+  } catch (error) {
+    res.status(500).json(response.error(error));
+  }
+});
 
 router.get('/me', isAuthenticate, async (req, res) => {
   res.status(200).json(response.fetched(req.user, "User profile fetched successfully"));
