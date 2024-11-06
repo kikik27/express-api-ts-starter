@@ -6,9 +6,11 @@ import { generateAccessToken, generateTokens } from "../../../utils/jwt";
 import { eq } from "drizzle-orm";
 import { createUser, getUserByEmail, getUserByResetPasswordToken, getUserByVerificationToken, updateUser } from "../users/user.service";
 import { sendEmailResetPassword, sendEmailVerifyEmail } from "../../../mailer/mailer.service";
+import { AppError, ErrorTypes } from "../../../utils/errors";
 
 export const register = async (user: User) => {
-  const verificationToken = Buffer.from(`${user.email}${Date.now()}`).toString('base64');
+  try {
+    const verificationToken = Buffer.from(`${user.email}${Date.now()}`).toString('base64');
 
   const userWithToken = {
     ...user,
@@ -16,40 +18,29 @@ export const register = async (user: User) => {
     verified_at: null
   };
 
-  // Create new user with verification token
   const newUser = await createUser(userWithToken);
 
-  // Send verification email
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
   await sendEmailVerifyEmail(newUser, { url: verificationUrl });
 
-  return generateTokens(newUser.id);
-};
-
-export const login = async (payload: User) => {
-  try {
-    const { password, email } = payload;
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1)
-      .then(results => results[0]);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error("Invalid password");
-    }
-
-    const { accessToken } = await generateTokens(user.id);
-    return { accessToken };
+    return generateTokens(newUser.id);
   } catch (error) {
     throw error;
   }
+};
+
+export const login = async (payload: User) => {
+  const { password, email } = payload;
+
+  const user = await getUserByEmail(email);
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new AppError('Invalid credentials', 401, ErrorTypes.INVALID_CREDENTIALS);
+  }
+
+  const { accessToken } = await generateTokens(user.id);
+  return { accessToken };
 };
 
 export const forgotPassword = async (payload: User) => {

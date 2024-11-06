@@ -5,6 +5,7 @@ import { z } from "zod";
 // import { User } from './db/schema/users';
 import { getUserById } from "./api/v1/users/user.service";
 import { UserCredentials } from "./api/v1/auth/auth.schema";
+import { AppError } from "./utils/errors";
 
 declare global {
   namespace Express {
@@ -28,18 +29,25 @@ export const notFound = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const errorHandler = (
-  err: Error,
+  err: Error | AppError,
   req: Request,
   res: Response<ErrorResponse>,
   next: NextFunction
 ) => {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      message: err.message,
+      stack: process.env.NODE_ENV === "production" ? "" : err.stack,
+    });
+  }
+
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode);
   res.json({
     message: err.message,
     stack: process.env.NODE_ENV === "production" ? "" : err.stack,
   });
-};
+};  
 
 export const isAuthenticate = async (
   req: Request,

@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { paginate } from "../../../helpers/response";
 import { safeUser } from "./user.schema";
+import { AppError } from "../../../utils/errors";
+import { ErrorTypes } from "../../../utils/errors";
 
 export const createUser = async (user: User) => {
   try {
@@ -21,7 +23,15 @@ export const createUser = async (user: User) => {
         verified_at: users.verified_at,
       });
     return newUser as safeUser;
-  } catch (error) {
+  } catch (error: any) {
+    // Check for PostgreSQL unique violation error code
+    if (error.code === '23505') {
+      throw new AppError(
+        'User with this email already exists',
+        409,
+        ErrorTypes.USER_ALREADY_EXISTS
+      );
+    }
     throw error;
   }
 };
@@ -35,7 +45,7 @@ export const getUserById = async (id: string) => {
       .limit(1);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError('User not found', 404, ErrorTypes.USER_NOT_FOUND);
     }
     return user;
   } catch (error) {
@@ -72,7 +82,7 @@ export const getUserByEmail = async (email: string) => {
       .limit(1);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError('User not found', 404, ErrorTypes.USER_NOT_FOUND);
     }
 
     return user;
@@ -99,7 +109,7 @@ export const getUserByResetPasswordToken = async (token: string) => {
       .limit(1);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError('User not found', 404, ErrorTypes.USER_NOT_FOUND);
     }
     return user;
   } catch (error) {
@@ -116,7 +126,7 @@ export const getUserByVerificationToken = async (token: string) => {
       .limit(1);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError('User not found', 404, ErrorTypes.USER_NOT_FOUND);
     }
 
     return user;
