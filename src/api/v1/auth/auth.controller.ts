@@ -2,17 +2,14 @@ import express from "express";
 import { login, register, resetPassword, sendResetPassword, verifyEmail } from "./auth.service";
 import { userForgotPasswordSchema, userLoginSchema, userRegistrationSchema, userResetPasswordSchema } from "./auth.schema";
 import { isAuthenticate, validateRequest } from "../../../middlewares";
-import { createResponses } from "../../../helpers/response";
-import { AppError } from "../../../utils/errors";
-import { NextFunction } from "express";
+import { handleResponse } from "../../../helpers/response";
 
 const router = express.Router();
-const response = createResponses('auth')
 
 router.post('/register', validateRequest(userRegistrationSchema), async (req, res, next) => {
   try {
     const token = await register(req.body);
-    res.status(201).json(response.created(token, "User registered successfully"));
+    handleResponse(res, { status: 201, message: "User registered successfully", data: token });
   } catch (error) {
     next(error);
   }
@@ -20,7 +17,7 @@ router.post('/register', validateRequest(userRegistrationSchema), async (req, re
 router.post('/login', validateRequest(userLoginSchema), async (req, res, next) => {
   try {
     const user = await login(req.body);
-    res.status(200).json(response.fetched(user, "User logged in successfully"));
+    handleResponse(res, { status: 200, message: "User logged in successfully", data: user });
   } catch (error) {
     next(error);
   }
@@ -29,7 +26,7 @@ router.post('/login', validateRequest(userLoginSchema), async (req, res, next) =
 router.post('/forgot-password', validateRequest(userForgotPasswordSchema), async (req, res, next) => {
   try {
     const user = await sendResetPassword(req.body);
-    res.status(200).json(response.fetched(user, "Reset password email sent successfully"));
+    handleResponse(res, { status: 200, message: "Reset password email sent successfully", data: user });
   } catch (error) {
     next(error);
   }
@@ -38,7 +35,7 @@ router.post('/forgot-password', validateRequest(userForgotPasswordSchema), async
 router.post('/reset-password', validateRequest(userResetPasswordSchema), async (req, res, next) => {
   try {
     const user = await resetPassword(req.body.token, req.body.password);
-    res.status(200).json(response.fetched(user, "Password reset successfully"));
+    handleResponse(res, { status: 200, message: "Password reset successfully", data: user });
   } catch (error) {
     next(error);
   }
@@ -47,14 +44,14 @@ router.post('/reset-password', validateRequest(userResetPasswordSchema), async (
 router.post('/verify-email', async (req, res, next) => {
   try {
     const user = await verifyEmail(req.query.token as string);
-    res.status(200).json(response.fetched(user, "Email verified successfully"));
+    handleResponse(res, { status: 200, message: "Email verified successfully", data: user });
   } catch (error) {
     next(error);
   }
 });
 
 router.get('/me', isAuthenticate, async (req, res) => {
-  res.status(200).json(response.fetched(req.user, "User profile fetched successfully"));
+  handleResponse(res, { status: 200, message: "User profile fetched successfully", data: req.user });
 });
 
 export default router;
