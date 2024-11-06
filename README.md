@@ -1,17 +1,19 @@
 # Express API Starter with TypeScript
 
-A modern Express.js API starter template with TypeScript, featuring authentication, email functionality, and database integration.
+A modern Express.js API starter template with TypeScript, featuring authentication, caching, email functionality, and database integration.
 
 ## Features
 
 ### Core Dependencies
 * Express.js with TypeScript
 * PostgreSQL with Drizzle ORM
+* Redis caching with IORedis
 * Email support with Nodemailer
 * Template rendering with Mustache
 
 ### Authentication & Security
-* JWT-based authentication
+* JWT-based authentication with refresh tokens
+* Password hashing with BCrypt
 * Password reset functionality
 * Email verification
 * Request validation with Zod
@@ -19,10 +21,12 @@ A modern Express.js API starter template with TypeScript, featuring authenticati
 * CORS support
 
 ### Development Tools
-* ESLint with TypeScript support
+* ESLint with Airbnb TypeScript configuration
 * Jest for testing
+* Supertest for API testing
 * Nodemon for development
 * TypeScript type checking
+* Drizzle Kit for database migrations
 
 ## Quick Start
 
