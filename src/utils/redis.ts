@@ -1,8 +1,8 @@
 import Redis from 'ioredis';
 
 const redis = new Redis({ 
-  port: 6379,
-  host: '127.0.0.1',
+  port: Number(process.env.REDIS_PORT),
+  host: process.env.REDIS_HOST,
 });
 
 const getKey = (key: string): string => {
