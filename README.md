@@ -38,23 +38,28 @@ npm install
 2. **Environment Setup**
 Create a `.env` file:
 ```env
-# Server
-PORT=3000
+# Server Configuration
 NODE_ENV=development
+PORT=3000
 
-# Database
-DATABASE_URL="your-postgresql-connection-string"
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 
-# JWT
-JWT_SECRET="your-secret-key"
-JWT_REFRESH_SECRET="your-refresh-secret-key"
+# JWT Authentication
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-here
 
-# Email
-MAIL_HOST="your-smtp-host"
-MAIL_PORT=2525
-MAIL_USER="your-mail-user"
-MAIL_PASSWORD="your-mail-password"
-FRONTEND_URL="http://localhost:3000"
+# Email Configuration (Example for Gmail)
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=your-email@gmail.com
+MAIL_PASSWORD=your-app-specific-password
+FRONTEND_URL=http://localhost:3000
+
+# Redis Cache Configuration
+REDIS_PREFIX=api_cache_
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 3. **Database Setup**
