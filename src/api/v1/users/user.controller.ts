@@ -1,14 +1,13 @@
 import express from "express";
-import { getUserById, getUsers } from "./user.service";
+import { createUser, getUserById, getUsers, updateUser } from "./user.service";
 import { isAuthenticate } from "../../../middlewares";
 import { cacheMiddleware } from "../../../middlewares/cache.middleware";
-import { createResponses, handleResponse } from "../../../helpers/response";
+import { handleResponse } from "../../../helpers/response";
 
 const router = express.Router();
-const response = createResponses('user');
 
 router.get('/', 
-  isAuthenticate,
+  isAuthenticate(['admin']),
   cacheMiddleware({ 
     ttl: 300, // 5 minutes
     keyPrefix: 'users' 
@@ -26,7 +25,7 @@ router.get('/',
 );
 
 router.get('/:id', 
-  isAuthenticate, 
+  isAuthenticate(['admin', 'user']),
   cacheMiddleware({ 
     ttl: 300, 
     keyPrefix: 'user' 
@@ -40,5 +39,28 @@ router.get('/:id',
     next(error);
   }
 });
+
+router.post('/', 
+  isAuthenticate(['admin']),
+  async (req, res, next) => {
+  try {
+    const user = await createUser(req.body);
+    handleResponse(res, { status: 200, message: "User created successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/:id', 
+  isAuthenticate(['admin']),
+  async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await updateUser(id, req.body);
+    handleResponse(res, { status: 200, message: "User updated successfully", data: user });
+  } catch (error) {
+    next(error);
+  }
+}); 
 
 export default router;

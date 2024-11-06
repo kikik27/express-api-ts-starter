@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { login, register, resetPassword, sendResetPassword, verifyEmail } from "./auth.service";
 import { userForgotPasswordSchema, userLoginSchema, userRegistrationSchema, userResetPasswordSchema } from "./auth.schema";
 import { isAuthenticate, validateRequest } from "../../../middlewares";
@@ -50,7 +50,7 @@ router.post('/verify-email', async (req, res, next) => {
   }
 });
 
-router.get('/me', isAuthenticate, async (req, res) => {
+router.get('/me', isAuthenticate(), async (req: Request, res: Response) => {
   handleResponse(res, { status: 200, message: "User profile fetched successfully", data: req.user });
 });
 
