@@ -20,6 +20,17 @@ interface ResponseHandler {
 
 // Add new global response handler
 export const handleResponse = (res: Response, { status, message, data, error }: ResponseHandler) => {
+  // Check if data has pagination structure
+  if (data && 'data' in data && 'meta' in data) {
+    return res.status(status).json({
+      message,
+      data: data.data,
+      meta: data.meta,
+      ...(error && { error: process.env.NODE_ENV === 'development' ? error : '' })
+    });
+  }
+
+  // Regular response
   return res.status(status).json({
     message,
     data: data || null,
@@ -158,7 +169,7 @@ export async function paginate<T>(
   options: PaginationOptions = { page: 1, limit: 10 },
   where?: SQL | SQLWrapper,
   orderBy: Record<string, "asc" | "desc"> = { created_at: "desc" }
-): Promise<PaginatedApiResponse<T>> {
+): Promise<{ data: T[]; meta: PaginationMeta }> {
   try {
     const { page, limit } = options;
     validatePaginationParams(page, limit);
@@ -174,7 +185,6 @@ export async function paginate<T>(
       .execute();
 
     return {
-      message: "Data fetched successfully",
       data,
       meta: calculatePaginationMeta(totalItems, page, limit),
     };
