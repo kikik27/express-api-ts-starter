@@ -21,6 +21,9 @@ export const createUser = async (user: User) => {
         email: users.email,
         role: users.role,
         verified_at: users.verified_at,
+        created_at: users.created_at,
+        updated_at: users.updated_at,
+        deleted_at: users.deleted_at,
       });
     return newUser as safeUser;
   } catch (error: any) {
@@ -43,6 +46,19 @@ export const getUserById = async (id: string) => {
       .from(users)
       .where(eq(users.id, id))
       .limit(1);
+
+    if (user) {
+      return {
+        id: user.id,
+        name: user.name, 
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at,
+        verified_at: user.verified_at,
+        updated_at: user.updated_at,
+        deleted_at: user.deleted_at
+      };
+    }
 
     if (!user) {
       throw new AppError('User not found', 404, ErrorTypes.USER_NOT_FOUND);
