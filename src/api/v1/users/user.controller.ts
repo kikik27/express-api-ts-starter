@@ -28,7 +28,7 @@ router.get('/:id',
   isAuthenticate(['admin', 'user']),
   cacheMiddleware({ 
     ttl: 300, 
-    keyPrefix: 'user' 
+    keyPrefix: 'profile' 
   }),
   async (req, res, next) => {
   try {

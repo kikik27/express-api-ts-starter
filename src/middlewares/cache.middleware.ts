@@ -4,16 +4,26 @@ import { get, set } from '../utils/redis';
 interface CacheOptions {
   ttl?: number;
   keyPrefix?: string;
+  useUserSpecificCache?: boolean;
 }
 
 export const cacheMiddleware = (options: CacheOptions = {}) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const { ttl = 3600, keyPrefix = '' } = options;
+    const { 
+      ttl = 3600, 
+      keyPrefix = '',
+      useUserSpecificCache = false
+    } = options;
     
     // Generate cache key based on URL and query parameters
     const generateCacheKey = (): string => {
       const params = new URLSearchParams(req.query as any).toString();
-      return `${keyPrefix}:${req.baseUrl}${req.path}${params ? `?${params}` : ''}`;
+      
+      // Only include userId in the cache key if useUserSpecificCache is true
+      const userId = useUserSpecificCache ? (req.user?.id || 'anonymous') : '';
+      const userPart = userId ? `${userId}:` : '';
+      
+      return `${keyPrefix}:${userPart}${req.baseUrl}${req.path}${params ? `?${params}` : ''}`;
     };
 
     // Store original response.json function
