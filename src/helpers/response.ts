@@ -10,18 +10,39 @@ const capitalize = (str: string): string =>
 const formatMessage = (resource: string, action: string, custom?: string): string => 
   custom || `${resource} ${action}`;
 
-// Add new interface for response handler
+// Define pagination interface
+interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+// Define response handler interface
 interface ResponseHandler {
   status: number;
   message: string;
-  data?: any;
+  data?: any | PaginatedResponse<any>;
   error?: any;
+}
+
+// Type guard to check if response is paginated
+function isPaginatedResponse(data: any): data is PaginatedResponse<any> {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'data' in data &&
+    'meta' in data &&
+    Array.isArray(data.data)
+  );
 }
 
 // Add new global response handler
 export const handleResponse = (res: Response, { status, message, data, error }: ResponseHandler) => {
-  // Check if data has pagination structure
-  if (data && 'data' in data && 'meta' in data) {
+  // Check if data has pagination structure using type guard
+  if (data && isPaginatedResponse(data)) {
     return res.status(status).json({
       message,
       data: data.data,
