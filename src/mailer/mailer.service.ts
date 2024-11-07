@@ -31,7 +31,7 @@ export const sendEmailResetPassword = async (
 };
 
 export const sendEmailVerifyEmail = async (
-  user: safeUser,
+  user: User,
   context: { url: string }
 ) => {
   try {
