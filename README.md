@@ -8,6 +8,7 @@ A modern Express.js API starter template with TypeScript, featuring authenticati
 * Express.js with TypeScript
 * PostgreSQL with Drizzle ORM
 * Redis caching with IORedis
+* Bull for job queues
 * Email support with Nodemailer
 * Template rendering with Mustache
 
@@ -22,9 +23,9 @@ A modern Express.js API starter template with TypeScript, featuring authenticati
 
 ### Development Tools
 * ESLint with Airbnb TypeScript configuration
-* Jest for testing
+* Jest with ts-jest for TypeScript testing
 * Supertest for API testing
-* Nodemon for development
+* Nodemon and tsx for development
 * TypeScript type checking
 * Drizzle Kit for database migrations
 
