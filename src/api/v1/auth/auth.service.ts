@@ -7,21 +7,27 @@ import { eq } from "drizzle-orm";
 import { createUser, getUserByEmail, getUserByResetPasswordToken, getUserByVerificationToken, updateUser } from "../users/user.service";
 import { sendEmailResetPassword, sendEmailVerifyEmail } from "../../../mailer/mailer.service";
 import { AppError, ErrorTypes } from "../../../utils/errors";
+import { queueManager, QueueNames } from '../../../utils/queue';
 
 export const register = async (user: User) => {
   try {
     const verificationToken = Buffer.from(`${user.email}${Date.now()}`).toString('base64');
 
-  const userWithToken = {
-    ...user,
-    verification_token: verificationToken,
-    verified_at: null
-  };
+    const userWithToken = {
+      ...user,
+      verification_token: verificationToken,
+      verified_at: null
+    };
 
-  const newUser = await createUser(userWithToken);
+    const newUser = await createUser(userWithToken);
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-  await sendEmailVerifyEmail(newUser, { url: verificationUrl });
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    
+    await queueManager.addJob(QueueNames.EMAIL, {
+      type: 'verification',
+      user: newUser,
+      verificationUrl
+    });
 
     return generateTokens(newUser.id);
   } catch (error) {
@@ -64,7 +70,12 @@ export const sendResetPassword = async (payload: User) => {
     await updateUser(user.id, updatedUser);
 
     const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    await sendEmailResetPassword(updatedUser, { url: resetPasswordUrl });
+    
+    await queueManager.addJob(QueueNames.EMAIL, {
+      type: 'reset_password',
+      user: updatedUser,
+      resetPasswordUrl
+    });
 
     return true;
   } catch (error) {
